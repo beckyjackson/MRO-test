@@ -36,7 +36,7 @@ def get_mamu_sequences():
 
 def get_current_loci():
     """Simple method to get current Mamu loci in MRO"""
-    mro_loci = set()
+    mro_loci = {"Mamu-A1", "Mamu-A2", "Mamu-A3", "Mamu-A4", "Mamu-A5", "Mamu-A6", "Mamu-A7", "Mamu-AG", "Mamu-DRB1", "Mamu-DPB1", "Mamu-DPA1", "Mamu-DQA1", "Mamu-DQB1"}
     with open(sys.argv[4]) as fh:
         rows = csv.DictReader(fh, delimiter="\t")
         for row in rows:
@@ -66,6 +66,7 @@ def update_chains(curr_loci, ipd_seqs, allele_map):
     print(curr_loci)
     imgt_alleles = set(allele_map.keys())
     missing_alleles = imgt_alleles.difference(mro_alleles)
+    missing_alleles.remove("")
     new_alleles = {x for x in missing_alleles if x.split("*")[0] in curr_loci}
     new_alleles = {x for x in new_alleles if x[-1] != "N"}
 
@@ -73,8 +74,19 @@ def update_chains(curr_loci, ipd_seqs, allele_map):
     missing_chain_rows = set()
     for allele in new_alleles:
         gene = allele.split("*")[0]
+        # Check if Mamu-A*, which need to be handled differently
+        if gene.split("-")[1][0] == "A":
+            gene = "Mamu-A"
         if "DRB" in gene:
-            gene = "DRB"
+            gene = "Mamu-DRB"
+        if "DPA" in gene:
+            gene = "Mamu-DPA"
+        if "DPB" in gene:
+            gene = "Mamu-DPB"
+        if "DQA" in gene:
+            gene = "Mamu-DQA"
+        if "DQB" in gene:
+            gene = "Mamu-DQB"
         try:
             accession = allele_map[allele]
             source = "IPD"
@@ -146,7 +158,8 @@ def create_classII_pairing(allele):
     """
     pairing = {
         "Mamu-DPA": "Mamu-DPB",
-        "Mamu-DRA": "Mamu-DRB"
+        "Mamu-DRA": "Mamu-DRB",
+        "Mamu-DQA1": "Mamu-DQB"
     }
     pairing_rev = {
         "Mamu-DPB1": "Mamu-DPA",
@@ -155,7 +168,8 @@ def create_classII_pairing(allele):
         "Mamu-DRB3": "Mamu-DRA",
         "Mamu-DRB4": "Mamu-DRA",
         "Mamu-DRB5": "Mamu-DRA",
-        "Mamu-DRB6": "Mamu-DRA"
+        "Mamu-DRB6": "Mamu-DRA",
+        "Mamu-DQB1": "Mamu-DQA"
     }
     gene = allele.split("*")[0]
     if gene in pairing:
@@ -210,8 +224,8 @@ def create_classII_prot(missing_chainII):
 
 def update_molecules(missing_alleles):
     """Builds and updates Mamu molecules"""
-    class_I_genes = ["A", "B", "E"]
-    class_II_genes = ["DRA", "DRB", "DRB1", "DRB3", "DRB4", "DRB5", "DRB6", "DPA", "DPB1"]
+    class_I_genes = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "AG", "B", "E"]
+    class_II_genes = ["DRA", "DRB", "DRB1", "DRB3", "DRB4", "DRB5", "DRB6", "DPA", "DPB1", "DQB1", "DQA1"]
 
     mro_proteins = set()
     with open(sys.argv[3]) as fh:
