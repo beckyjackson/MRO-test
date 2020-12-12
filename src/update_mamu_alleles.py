@@ -63,12 +63,15 @@ def update_chains(curr_loci, ipd_seqs, allele_map):
                 mro_alleles.add(allele)
 
     # Find differences between IMGT and MRO alleles
-    print(curr_loci)
     imgt_alleles = set(allele_map.keys())
     missing_alleles = imgt_alleles.difference(mro_alleles)
     missing_alleles.remove("")
     new_alleles = {x for x in missing_alleles if x.split("*")[0] in curr_loci}
     new_alleles = {x for x in new_alleles if x[-1] != "N"}
+    new_alleles.remove("Mamu-DRB*W002:01")
+    new_alleles.remove("Mamu-DRB*W006:02")
+
+
 
     missing_chain_seq_rows = set()
     missing_chain_rows = set()
@@ -305,10 +308,14 @@ def update_IEDB_tab(missing_molecules):
             locus = molecule.split("-")[1].split("*")[0]
             curr_iedb_id += 1
             # Specific to Mamu alleles, either DQ, DRB3 or whatever locus is
-            if "DP" in locus:
+            if locus[0] == "A":
+                tup = (molecule, curr_iedb_id, "A", "", "")
+            elif "DP" in locus:
                 tup = (molecule, curr_iedb_id, "DP", "", "")
             elif "DR" in locus:
                 tup = (molecule, curr_iedb_id, "DR", "", "")
+            elif "DQ" in locus:
+                tup = (molecule, curr_iedb_id, "DQ", "", "")
             else:
                 tup = (molecule, curr_iedb_id, locus, "", "")
             writer.writerow(tup)
