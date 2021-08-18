@@ -28,7 +28,9 @@ jobs:
         - name: Update HLA sequences
           id: check_files
           run: |
+            echo "========== refreshing sequences =========="
             make refresh-hla-seqs
+            echo "============ check for update ============"
             FNAME=$(git diff --name-only ontology/chain-sequence.tsv)
             if [[ $FNAME == ontology/chain-sequence.tsv ]]; then
               echo "::set-output name=run_job::true"
