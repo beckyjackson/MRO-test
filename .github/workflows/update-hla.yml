@@ -45,7 +45,8 @@ jobs:
     if: needs.refresh.outputs.run_job == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - run: |
+          echo $(git diff --name-only ontology/chain-sequence.tsv)
       - name: Commit changes
         run: |
           git config user.name 'GitHub Actions Bot'
