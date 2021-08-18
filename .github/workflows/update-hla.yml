@@ -30,11 +30,13 @@ jobs:
           run: |
             echo "========== refreshing sequences =========="
             make refresh-hla-seqs
-            echo "============ check for update ============"
+            echo "========== checking for updates =========="
             FNAME=$(git diff --name-only ontology/chain-sequence.tsv)
             if [[ $FNAME == ontology/chain-sequence.tsv ]]; then
+              echo "chain-sequence has an update!"
               echo "::set-output name=run_job::true"
             else
+              echo "no new HLA sequences to commit"
               echo "::set-output name=run_job::false"
             fi
   make_pr:
