@@ -1,0 +1,54 @@
+name: Update HLA
+
+on:
+  push:
+    branches: [ master ]
+  # workflow_dispatch:
+  # schedule:
+    # - cron: '0 0 * * 0'
+
+jobs:
+  # scheduled:
+  refresh:
+    name: Refresh HLA sequences
+    outputs:
+      run_job: ${{ steps.check_files.outputs.run_job }}
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+        - uses: actions/setup-python@v2
+          with:
+            python-version: '3.6'
+        - name: Install requirements
+          run: |
+            python3 -m pip install -r requirements.txt
+        - name: Download HLA FASTA
+          run: |
+            make build/hla.fasta
+        - name: Update HLA sequences
+          id: check_files
+          run: |
+            make refresh-hla-seqs
+            FNAME=$(git diff --name-only ontology/chain-sequence.tsv)
+            if [[ $FNAME == ontology/chain-sequence.tsv ]]; then
+              echo "::set-output name=run_job::true"
+            else
+              echo "::set-output name=run_job::false"
+            fi
+  make_pr:
+    name: Update chain-sequence
+    needs: refresh
+    if: needs.refresh.outputs.run_job == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Commit changes
+        run: |
+          git add ontology/chain-sequence.tsv
+          git commit -m "Update HLA sequences"
+      - name: Set date
+        run: echo "TODAY=$(date '+%Y-%m-%d')" >> $TODAY
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: ${{ env.TODAY }} HLA Sequence Update
