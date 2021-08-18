@@ -37,8 +37,6 @@ jobs:
               echo "no new HLA sequences to commit"
               echo "::set-output name=run_job::false"
             fi
-        - name: Set date
-          run: echo "TODAY=$(date '+%Y-%m-%d')" >> $TODAY
         - name: Test output 
           if: steps.check_files.outputs.run_job == 'true'
           run: echo "Creating a new PR"
@@ -46,4 +44,4 @@ jobs:
           if: steps.check_files.outputs.run_job == 'true'
           uses: peter-evans/create-pull-request@v3
           with:
-            title: ${{ env.TODAY }} HLA Sequence Update
+            title: HLA Sequence Update
